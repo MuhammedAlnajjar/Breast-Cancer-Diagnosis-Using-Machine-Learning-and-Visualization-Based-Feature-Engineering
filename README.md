@@ -1,4 +1,3 @@
-# Breast-Cancer-Diagnosis-Using-Machine-Learning-and-Visualization-Based-Feature-Engineering
 # Scalable Real-Time Detection of AI-Generated Arabic Text
 
 ## Project Overview
