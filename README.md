@@ -134,3 +134,224 @@ honore_r
 noun_frequency
 genitive_count
 entity_density
+```
+
+### Advanced Features
+
+TF-IDF was used as a scalable text representation using Spark MLlib:
+
+- RegexTokenizer
+- StopWordsRemover
+- CountVectorizer
+- IDF
+
+---
+
+## Machine Learning Models
+
+Three Spark MLlib models were trained and evaluated:
+
+1. Logistic Regression
+2. Random Forest
+3. Linear SVM
+
+The models were evaluated using:
+
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- ROC-AUC
+- Confusion matrix
+
+---
+
+## Model Results
+
+| Model | Accuracy | Precision | Recall | F1-score | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| Logistic Regression | 0.6755 | 0.6769 | 0.6755 | 0.6754 | 0.7560 |
+| Random Forest | 0.6879 | 0.6900 | 0.6879 | 0.6877 | 0.7538 |
+| Linear SVM | 0.6950 | 0.6997 | 0.6950 | 0.6942 | 0.7584 |
+
+The best-performing model was **Linear SVM**, which achieved:
+
+- Accuracy: **0.6950**
+- F1-score: **0.6942**
+- ROC-AUC: **0.7584**
+
+---
+
+## Confusion Matrix Summary
+
+Assuming the label mapping is:
+
+```text
+0 = ai_generated
+1 = human
+```
+
+### Logistic Regression
+
+```text
+True 0, Predicted 0: 193
+True 0, Predicted 1: 82
+True 1, Predicted 0: 101
+True 1, Predicted 1: 188
+```
+
+### Random Forest
+
+```text
+True 0, Predicted 0: 199
+True 0, Predicted 1: 76
+True 1, Predicted 0: 100
+True 1, Predicted 1: 189
+```
+
+### Linear SVM
+
+```text
+True 0, Predicted 0: 208
+True 0, Predicted 1: 67
+True 1, Predicted 0: 105
+True 1, Predicted 1: 184
+```
+
+---
+
+## Feature Importance / Coefficients
+
+Feature coefficient analysis showed that **noun frequency** and **entity density** were the most influential features.
+
+| Feature | Coefficient | Absolute Coefficient |
+|---|---:|---:|
+| noun_frequency | -15.7302 | 15.7302 |
+| entity_density | -12.9217 | 12.9217 |
+| genitive_count | 0.0449 | 0.0449 |
+| honore_r | 0.0002 | 0.0002 |
+
+The results show that noun usage and named entity density were the strongest stylometric indicators for distinguishing human-written and AI-generated Arabic text.
+
+---
+
+## Stream Simulation
+
+A manual micro-batch stream simulation was implemented to avoid local notebook checkpoint issues with Spark Structured Streaming.
+
+Each CSV file represented a new incoming batch of Arabic abstracts. The stream simulation used the stylometric feature dataset and processed each batch sequentially.
+
+For each batch, the system:
+
+1. Loaded the batch file.
+2. Assembled the four stylometric features.
+3. Applied the trained model.
+4. Generated predicted labels.
+5. Measured latency and throughput.
+
+---
+
+## Stream Benchmark Results
+
+The stream benchmark used:
+
+- 10 batches
+- 10 records per batch
+- 100 total streamed records
+
+| Metric | Result |
+|---|---:|
+| Average latency | 0.0950 seconds |
+| Minimum latency | 0.0726 seconds |
+| Maximum latency | 0.1407 seconds |
+| Average throughput | 109.60 records/second |
+| Minimum throughput | 71.08 records/second |
+| Maximum throughput | 137.78 records/second |
+
+The results show that the micro-batch streaming simulation can process small incoming Arabic text batches efficiently.
+
+---
+
+## Scalability Benchmark
+
+Batch processing was benchmarked using different Spark local resource settings.
+
+| Spark Mode | Cores | Batch Time | Accuracy | F1-score | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| local[1] | 1 | 2.6712 sec | 0.9792 | 0.9792 | 0.9966 |
+| local[2] | 2 | 2.2059 sec | 0.9792 | 0.9792 | 0.9964 |
+| local[4] | 4 | 1.8863 sec | 0.9792 | 0.9792 | 0.9964 |
+
+Increasing Spark local cores reduced batch processing time while model performance remained stable.
+
+---
+
+## Batch vs Stream Processing
+
+Batch processing was used for:
+
+- Feature engineering
+- Model training
+- Model tuning
+- Full evaluation
+
+Stream processing was used for:
+
+- Real-time prediction simulation
+- Micro-batch inference
+- Latency and throughput measurement
+
+Batch processing provides stronger evaluation and supports heavier feature engineering. Stream processing is more suitable for real-time deployment but requires careful attention to latency, throughput, and feature consistency.
+
+---
+
+## Technologies Used
+
+- Python
+- Apache Spark
+- PySpark
+- Spark DataFrames
+- Spark MLlib
+- Parquet
+- Pandas
+- Matplotlib
+- Jupyter Notebook / VS Code
+- Stanza / Arabic NLP tools
+- Git and GitHub
+
+---
+
+## Limitations
+
+This project has several limitations:
+
+- A smaller sampled dataset was used during local development.
+- The streaming component was implemented as manual micro-batch simulation rather than full Kafka deployment.
+- POS and NER-based feature extraction can be computationally expensive.
+- The model performance was moderate, showing that four stylometric features alone may not fully capture the complexity of AI-generated Arabic text.
+- The dataset focuses on academic abstracts, so results may not generalize to all Arabic domains.
+
+---
+
+## Future Work
+
+Future improvements include:
+
+- Train on the full dataset using a stronger Spark cluster.
+- Deploy a full Kafka + Spark Structured Streaming pipeline.
+- Add transformer-based Arabic embeddings such as AraBERT.
+- Compare Spark MLlib models with deep learning models.
+- Add more Arabic linguistic and semantic features.
+- Evaluate on Arabic news, essays, social media, and dialectal text.
+- Optimize real-time feature extraction for production deployment.
+
+---
+
+## Conclusion
+
+This project demonstrates a scalable Spark-based pipeline for detecting AI-generated Arabic text. The system supports distributed preprocessing, feature engineering, model training, stream simulation, and scalability benchmarking.
+
+Linear SVM achieved the best overall model performance, while noun frequency and entity density were the most influential stylometric features. The scalability results showed that increasing Spark cores improved batch processing time, and the stream simulation achieved low latency and high throughput for small micro-batches.
+
+Overall, the project shows that Big Data tools such as Apache Spark can support both batch and near real-time AI-generated Arabic text detection.
+
